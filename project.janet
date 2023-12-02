@@ -1,3 +1,4 @@
 (declare-project
   :name "aoc23"
-  :author "Albin Heimerson")
+  :author "Albin Heimerson"
+  :dependencies ["sh"])
