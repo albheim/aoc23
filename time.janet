@@ -1,12 +1,19 @@
 (use sh)
 
-(defn main
-  [& args]
+(defn bench [day]
+  (let [name (string/format "day%02d" day)
+        file (string name ".janet")
+        jimage (string "build/" name ".jimage")
+        cmd (string "janet -i " jimage)]
+    ($ janet -c ,file ,jimage)
+    ($ hyperfine ,cmd)))
+
+(defn main [& args]
   ($ mkdir -p build)
-  (each idx (range 1 (length args))
+  (if (= 1 (length args))
     (do
-      (let [file (string (get args idx) ".janet")
-          jimage (string "build/" (get args idx) ".jimage")
-          cmd (string "janet -i " jimage)]
-      ($ janet -c ,file ,jimage)
-      ($ hyperfine ,cmd)))))
+      (var i 0)
+      (while (file/open (string/format "day%02d.janet" (++ i)))
+        (bench i)))
+    (each idx (range 1 (length args))
+      (bench (get args idx)))))
