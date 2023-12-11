@@ -2,15 +2,23 @@
   ~{:line (sequence (group (any (capture (choice "." "#")))) (choice "\n" -1))
     :main (some :line)}))
 
+(defn cumsum [xs]
+  (def result (array/new (length xs)))
+  (var acc (xs 0))
+  (loop [idx :range [0 (length xs)]]
+    (put result idx acc)
+    (set acc (+ acc (xs idx))))
+  result)
+
 (defn solve [grid expansion]
-  (def empty-cols (seq [col :range [0 (length (grid 0))]]
+  (def prefix-dist-cols (cumsum (seq [col :range [0 (length (grid 0))]]
                     (if (all |(= ((grid $) col) ".") (range (length grid)))
-                      true
-                      false)))
-  (def empty-rows (seq [row :range [0 (length grid)]]
+                      expansion
+                      1))))
+  (def prefix-dist-rows (cumsum (seq [row :range [0 (length grid)]]
                     (if (all |(= ((grid row) $) ".") (range (length (grid row))))
-                      true
-                      false)))
+                      expansion 
+                      1))))
   (def galaxies (seq [row :range [0 (length grid)]
                       col :range [0 (length (grid 0))]
                       :when (= ((grid row) col) "#")]
@@ -19,15 +27,10 @@
   (loop [[row-1 col-1] :in galaxies
          [row-2 col-2] :in galaxies
          :when (or (< row-1 row-2) (and (= row-1 row-2) (< col-1 col-2)))] 
-    (set total-length (- total-length 2))
-    (loop [row :range-to [(min row-1 row-2) (max row-1 row-2)]]
-      (set total-length (+ total-length
-                          (if (empty-rows row)
-                            expansion 1))))
-    (loop [col :range-to [(min col-1 col-2) (max col-1 col-2)]]
-      (set total-length (+ total-length
-                          (if (empty-cols col)
-                            expansion 1)))))
+    (set total-length (+
+      total-length
+      (math/abs (- (prefix-dist-rows row-2) (prefix-dist-rows row-1)))
+      (math/abs (- (prefix-dist-cols col-2) (prefix-dist-cols col-1))))))
   total-length)
 
 (defn main [& args]
