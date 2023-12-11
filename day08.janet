@@ -14,18 +14,12 @@
 
 (defn part1 [[instructions connections]]
   (count-steps instructions connections "AAA" |(= $ "ZZZ")))
-
-(defn gcd [a b]
-  (if (= b 0) a (gcd b (mod a b))))
-
-(defn lcm [a b & rest]
-  (if (empty? rest)
-    (* a (/ b (gcd a b)))
-    (lcm (lcm a b) ;rest)))
         
 (defn part2 [[instructions connections]]
-  (lcm ;(map |(count-steps instructions connections $ |(= (get $ 2) (chr "Z"))) 
-          (filter |(= (get $ 2) (chr "A")) (keys connections)))))
+  (reduce (fn [acc x] (math/lcm acc x))
+    1
+    (map |(count-steps instructions connections $ |(= (get $ 2) (chr "Z"))) 
+        (filter |(= (get $ 2) (chr "A")) (keys connections)))))
 
 (defn main [& args]
   (let [data (peg/match grammar (slurp "data/day08.txt"))]
